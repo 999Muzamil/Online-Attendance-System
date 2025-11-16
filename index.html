@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Attendance System</title>
+
+    <style>
+      body {
+        margin: 0;
+        padding: 30px;
+        background: #eef4ff;
+        font-family: "Poppins", sans-serif;
+        display: flex;
+        justify-content: center;
+      }
+
+      .container {
+        background: #ffffff;
+        width: 95%;
+        max-width: 900px;
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+        border-top: 6px solid #3f72ff;
+      }
+
+      h2 {
+        margin: 0 0 20px 0;
+        color: #1b2d6b;
+        text-align: center;
+        font-size: 28px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th {
+        background: #3f72ff;
+        color: white;
+        padding: 12px;
+        border-radius: 6px 6px 0 0;
+        font-size: 16px;
+      }
+
+      td {
+        padding: 12px;
+        text-align: center;
+        background: #f8faff;
+        border-bottom: 2px solid #e5e9ff;
+      }
+
+      input {
+        padding: 8px;
+        font-size: 14px;
+        border-radius: 6px;
+        border: 2px solid #4e515d;
+        width: 90%;
+      }
+
+      select {
+        padding: 7px 14px;
+        font-size: 14px;
+        border-radius: 6px;
+        border: 2px solid #cbd5ff;
+        background: white;
+        cursor: pointer;
+        font-weight: 600;
+      }
+
+      .present {
+        color: #16a34a;
+        font-weight: bold;
+      }
+      .absent {
+        color: #da1010;
+        font-weight: bold;
+      }
+      .leave {
+        color: #e4d606;
+        font-weight: bold;
+      }
+
+      .btn {
+        padding: 10px 16px;
+        border-radius: 8px;
+        font-size: 15px;
+        cursor: pointer;
+        border: none;
+        font-weight: 600;
+        transition: 0.25s;
+      }
+
+      .add-btn {
+        background: #089744;
+        color: white;
+      }
+      .add-btn:hover {
+        background: #1e4fd0;
+      }
+
+      .remove-btn {
+        background: #ef4444;
+        color: white;
+      }
+      .remove-btn:hover {
+        background: #d92b2b;
+      }
+
+      .save-btn {
+        background: #000;
+        color: white;
+        width: 100%;
+        padding: 12px;
+        margin-top: 15px;
+        border-radius: 10px;
+      }
+
+      /* Stylish date input */
+      input[type="date"],
+      #searchDate {
+        padding: 10px 14px;
+        font-size: 15px;
+        border-radius: 10px;
+        border: 2px solid #3f72ff;
+        background: #f0f4ff;
+        outline: none;
+        width: 250px;
+        transition: 0.3s;
+        margin-bottom: 15px;
+      }
+
+      input[type="date"]:hover,
+      #searchDate:hover {
+        background: #e7eeff;
+      }
+
+      input[type="date"]:focus,
+      #searchDate:focus {
+        border-color: #1b2dff;
+        background: #e8edff;
+        box-shadow: 0 0 8px rgba(63, 114, 255, 0.4);
+      }
+
+      /* Search button */
+      .search-btn {
+        background: #000;
+        color: white;
+        padding: 10px 18px;
+        border-radius: 10px;
+        font-size: 15px;
+        border: none;
+        cursor: pointer;
+      }
+
+      .search-btn:hover {
+        background: #3f72ff;
+      }
+
+      .view-box {
+        margin-top: 30px;
+        padding: 15px;
+        border-radius: 10px;
+        background: #f0f4ff;
+        border-left: 5px solid #3f72ff;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <h2>Online Attendance System</h2>
+
+      <!-- Date -->
+      <input type="date" id="dateInput" />
+
+      <table id="attendanceTable">
+        <tr>
+          <th>Enrollment</th>
+          <th>Name</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+
+        <tr>
+          <td>
+            <input
+              type="text"
+              class="enrollment"
+              placeholder="Enter Enrollment"
+              onkeyup="checkEnrollment(this)"
+            />
+          </td>
+          <td><input type="text" placeholder="Enter Name" /></td>
+          <td>
+            <select onchange="updateStatus(this)">
+              <option value="present" class="present">Present</option>
+              <option value="absent" class="absent">Absent</option>
+              <option value="leave" class="leave">Leave</option>
+            </select>
+          </td>
+          <td>
+            <button class="btn remove-btn" onclick="removeRow(this)">
+              Remove
+            </button>
+          </td>
+        </tr>
+      </table>
+
+      <br />
+      <button class="btn add-btn" onclick="addRow()">+ Add New Student</button>
+      <button class="btn save-btn" onclick="saveAttendance()">
+        💾 Save Attendance
+      </button>
+
+      <hr />
+      <br />
+
+      <!-- Search -->
+      <input type="date" id="searchDate" />
+      <button class="search-btn" onclick="searchAttendance()">
+        Search Attendance
+      </button>
+
+      <div class="view-box" id="viewAttendance">
+        <b>Search result will appear here...</b>
+      </div>
+    </div>
+    <script>
+      // Update status color
+      function updateStatus(selectElement) {
+        selectElement.className = selectElement.value;
+      }
+
+      // Ensure enrollment unique
+      function checkEnrollment(input) {
+        const all = document.querySelectorAll(".enrollment");
+        let values = [];
+
+        all.forEach((e) => {
+          if (e.value !== "") values.push(e.value);
+        });
+
+        if (values.filter((v) => v === input.value).length > 1) {
+          alert("⚠ Enrollment number must be UNIQUE!");
+          input.value = "";
+        }
+      }
+
+      // Add row
+      function addRow() {
+        const table = document.getElementById("attendanceTable");
+        const row = table.insertRow(-1);
+
+        row.innerHTML = `
+        <td><input type="text" class="enrollment" placeholder="Enter Enrollment" onkeyup="checkEnrollment(this)"></td>
+        <td><input type="text" placeholder="Enter Name"></td>
+        <td>
+            <select onchange="updateStatus(this)">
+                <option value="present" class="present">Present</option>
+                <option value="absent" class="absent">Absent</option>
+                <option value="leave" class="leave">Leave</option>
+            </select>
+        </td>
+        <td><button class="btn remove-btn" onclick="removeRow(this)">Remove</button></td>
+    `;
+      }
+
+      // Remove row
+      function removeRow(btn) {
+        btn.parentElement.parentElement.remove();
+      }
+
+      // Save attendance by date
+      function saveAttendance() {
+        const date = document.getElementById("dateInput").value;
+        if (!date) {
+          alert("Please select a date!");
+          return;
+        }
+
+        const rows = document.querySelectorAll("#attendanceTable tr");
+        let data = [];
+
+        rows.forEach((r, index) => {
+          if (index === 0) return;
+
+          const enrollment = r.cells[0].querySelector("input").value;
+          const name = r.cells[1].querySelector("input").value;
+          const status = r.cells[2].querySelector("select").value;
+
+          if (enrollment !== "" && name !== "") {
+            data.push({ enrollment, name, status });
+          }
+        });
+
+        localStorage.setItem(date, JSON.stringify(data));
+        alert("Attendance saved for " + date);
+      }
+
+      // Search attendance by date
+      function searchAttendance() {
+        const date = document.getElementById("searchDate").value;
+        const output = document.getElementById("viewAttendance");
+
+        if (!date) {
+          output.innerHTML = "<b>Please enter a date to search.</b>";
+          return;
+        }
+
+        const data = localStorage.getItem(date);
+
+        if (!data) {
+          output.innerHTML = "<b>No attendance found for this date.</b>";
+          return;
+        }
+
+        const records = JSON.parse(data);
+        let html = `<h3>Attendance on ${date}</h3><ul>`;
+
+        records.forEach((r) => {
+          html += `<li><b>${r.enrollment}</b> — ${r.name} : ${r.status}</li>`;
+        });
+
+        html += `</ul>`;
+        output.innerHTML = html;
+      }
+    </script>
+  </body>
+</html>
